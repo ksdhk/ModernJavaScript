@@ -11,3 +11,6 @@ var hex = 0x41;
 console.log(binary);
 console.log(octal);
 console.log(hex);
+
+var templeate = `Template literal`
+console.log(templeate);
