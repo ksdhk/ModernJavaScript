@@ -21,18 +21,19 @@
     // the link to your model provided by Teachable Machine export panel
     const URL = "./my_model/";
     let model, webcam, ctx, labelContainer, maxPredictions;
+    let sec = false;
 
     async function init() {
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
 
-// load the model and metadata
-// Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-// Note: the pose library adds a tmPose object to your window (window.tmPose)
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // Note: the pose library adds a tmPose object to your window (window.tmPose)
         model = await tmPose.load(modelURL, metadataURL);
         maxPredictions = model.getTotalClasses();
 
-// Convenience function to setup a webcam
+        // Convenience function to setup a webcam
         const size = 200;
         const flip = true; // whether to flip the webcam
         webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
@@ -40,7 +41,7 @@
         await webcam.play();
         window.requestAnimationFrame(loop);
 
-// append/get elements to the DOM
+        // append/get elements to the DOM
         const canvas = document.getElementById("canvas");
         canvas.width = size; canvas.height = size;
         ctx = canvas.getContext("2d");
@@ -58,9 +59,12 @@
     var isdisabled = false;
     var isPlaying = false;
     const playTerm = 1000;
-    async function playSound(fileName)
+
+    async function  playSound(fileName)
     {
+
         var audio = new Audio(fileName);
+
         setTimeout(function(){
             audio.loop = false;
             audio.onended = function ()
@@ -68,14 +72,18 @@
                 isPlaying = false;
             }
             if(!isPlaying) audio.play();
+
             isPlaying = true;
+            webCamRedEffect();
         }, playTerm);
+
     }
+
     async function predict() {
-// Prediction #1: run input through posenet
-// estimatePose can take in an image, video or canvas html element
+        // Prediction #1: run input through posenet
+        // estimatePose can take in an image, video or canvas html element
         const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
-// Prediction 2: run input through teachable machine classification model
+        // Prediction 2: run input through teachable machine classification model
         const prediction = await model.predict(posenetOutput);
         const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
         if(prediction[0].probability.toFixed(2) == 1.00){
@@ -84,10 +92,17 @@
             if(status == "bent"){
                 if(isdisabled){
                 }else{
+                    sec = false;
                     isdisabled = true;
                     playSound('손을씻어주세요.mp3');
                     isdisabled = false;
-
+                    setTimeout(function() {
+                        sec = true;
+                    }, 2000);
+                    setTimeout(function() {
+                        if(sec)
+                            webCamNoEffect();
+                    }, 2200);
                 }
 
             }
@@ -96,9 +111,17 @@
             if(status == "face"){
                 if(isdisabled){
                 }else{
+                    sec = false;
                     isdisabled = true;
                     playSound('손을씻어주세요.mp3');
                     isdisabled = false;
+                    setTimeout(function() {
+                        sec = true;
+                    }, 2000);
+                    setTimeout(function() {
+                        if(sec)
+                            webCamNoEffect();
+                    }, 2200);
                 }
             }
             status = "face"
@@ -106,9 +129,17 @@
             if(status == "push"){
                 if(isdisabled){
                 }else{
+                    sec = false;
                     isdisabled = true;
                     playSound('손을씻어주세요.mp3');
                     isdisabled = false;
+                    setTimeout(function() {
+                        sec = true;
+                    }, 2000);
+                    setTimeout(function() {
+                        if(sec)
+                            webCamNoEffect();
+                    }, 2200);
                 }
             }
             status = "push"
@@ -120,14 +151,14 @@
             labelContainer.childNodes[i].innerHTML = classPrediction;
         }
 
-// finally draw the poses
+        // finally draw the poses
         drawPose(pose);
     }
 
     function drawPose(pose) {
         if (webcam.canvas) {
             ctx.drawImage(webcam.canvas, 0, 0);
-// draw the keypoints and skeleton
+            // draw the keypoints and skeleton
             if (pose) {
                 const minPartConfidence = 0.5;
                 tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
@@ -135,7 +166,17 @@
             }
         }
     }
+    function webCamRedEffect(){
+        const canvas = document.getElementById("canvas");
+        canvas.style.zIndex = 1;
+        canvas.style.backgroundColor = "red";
+        canvas.style.opacity = 0.5;
+    }
 
+    function webCamNoEffect(){
+        const canvas = document.getElementById("canvas");
+        canvas.removeAttribute("style");
+    }
 </script>
 
 </body>
